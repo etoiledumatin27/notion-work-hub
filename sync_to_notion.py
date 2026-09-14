@@ -89,10 +89,27 @@ def main():
     tasks_data = []
     logs_data = []
     
+    import glob
+    json_path = None
     if len(sys.argv) > 1 and sys.argv[1].endswith(".json"):
-        json_path = sys.argv[1]
+        candidate = os.path.expanduser(sys.argv[1])
+        if os.path.exists(candidate):
+            json_path = candidate
+        else:
+            print(f"❌ Error: File not found: {candidate}", file=sys.stderr)
+            sys.exit(1)
+    elif len(sys.argv) == 1:
+        # Auto-detect latest export in ~/Downloads or current folder
+        downloads_exports = glob.glob(os.path.expanduser("~/Downloads/focus-hub-export-*.json"))
+        local_exports = glob.glob("focus-hub-export-*.json")
+        all_exports = sorted(downloads_exports + local_exports, key=os.path.getmtime, reverse=True)
+        if all_exports:
+            json_path = all_exports[0]
+            print(f"💡 Auto-detected latest export from Downloads: {json_path}")
+
+    if json_path:
         print(f"Reading from JSON: {json_path}")
-        with open(json_path, "r") as f:
+        with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             # Widget exports tasks as {id, name, target, completed, done(bool), category}
             for t in data.get("tasks", []):

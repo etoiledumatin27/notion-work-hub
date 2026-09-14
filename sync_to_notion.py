@@ -107,10 +107,12 @@ def main():
             json_path = all_exports[0]
             print(f"💡 Auto-detected latest export from Downloads: {json_path}")
 
+    daily_goal = None
     if json_path:
         print(f"Reading from JSON: {json_path}")
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
+            daily_goal = data.get("dailyGoal")
             # Widget exports tasks as {id, name, target, completed, done(bool), category}
             for t in data.get("tasks", []):
                 if isinstance(t.get("done"), bool):
@@ -240,6 +242,8 @@ def main():
 
     print("\n" + "="*50)
     print("✅ Sync Summary:")
+    if daily_goal:
+        print(f"Daily Goal: {daily_goal} Pomodoros")
     print(f"Tasks: {synced_tasks} updated, {created_tasks} created")
     print(f"Logs: {synced_logs} skipped (already exists), {created_logs} created")
     print("="*50)

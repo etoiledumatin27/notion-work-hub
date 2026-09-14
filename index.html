@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notion Focus Hub & Pomodoro Tracker</title>
+  <style>
+    :root {
+      --bg: #fbfbfa;
+      --card-bg: #ffffff;
+      --border: #e3e2de;
+      --text: #37352f;
+      --muted: #787774;
+      --primary: #eb5757;
+      --primary-hover: #d94b4b;
+      --accent: #2eaadc;
+      --green: #0f8558;
+      --purple: #9065b0;
+      --orange: #d9730d;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(15, 15, 15, 0.05);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Top stats */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .stat-card .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-card .value {
+      font-size: 22px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .stat-card .subtext {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Layout grid */
+    .grid-main {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 820px) {
+      .grid-main { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Timer styles */
+    .timer-modes {
+      display: flex;
+      gap: 6px;
+      background: #f1f0ee;
+      padding: 4px;
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 6px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: var(--card-bg);
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    .timer-display {
+      font-size: 58px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 2px;
+      margin: 8px 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-task-label {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      min-height: 20px;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    button.btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button.btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    button.btn-secondary {
+      background: #f1f0ee;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+
+    button.btn-secondary:hover {
+      background: #e9e8e5;
+    }
+
+    /* Visual Analytics Section */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .analytics-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Bar Chart */
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      height: 140px;
+      padding-top: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar-col .bar-fill {
+      width: 100%;
+      max-width: 28px;
+      background: #f1f0ee;
+      border-radius: 4px 4px 0 0;
+      position: relative;
+      transition: height 0.4s ease, background 0.2s;
+    }
+
+    .bar-col.today .bar-fill {
+      background: var(--primary);
+    }
+
+    .bar-col .bar-fill:hover {
+      filter: brightness(0.9);
+    }
+
+    .bar-col .bar-val {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .bar-labels {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .bar-label-item {
+      flex: 1;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .bar-label-item.today {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    /* Category breakdown */
+    .category-row {
+      margin-bottom: 12px;
+    }
+
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+
+    .category-bar-bg {
+      height: 8px;
+      background: #f1f0ee;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .category-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    /* Task list */
+    .task-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .task-form input[type="text"] {
+      flex: 1;
+      min-width: 180px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .task-form select {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: white;
+    }
+
+    .task-form input[type="number"] {
+      width: 65px;
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: #ffffff;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .task-item.selected {
+      border-color: var(--primary);
+      background: #fffcfc;
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    .task-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-title {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .task-title.done {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: #f1f0ee;
+      border-radius: 3px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--green);
+      transition: width 0.3s ease;
+    }
+
+    .task-meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 3px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .category-tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+
+    .tag-strategy { background: #e8f0fe; color: #1a73e8; }
+    .tag-engineering { background: #e6f4ea; color: #137333; }
+    .tag-design { background: #fce8e6; color: #c5221f; }
+    .tag-admin { background: #fef7e0; color: #b06000; }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 4px;
+      border-radius: 4px;
+    }
+
+    .btn-icon:hover {
+      background: #f1f0ee;
+      color: var(--text);
+    }
+
+    /* Logs Table */
+    .log-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .log-table th, .log-table td {
+      padding: 8px 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .log-table th {
+      color: var(--muted);
+      font-weight: 600;
+      background: #fafaf9;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 6px;
+      font-size: 11px;
+      border-radius: 4px;
+      background: #f1f0ee;
+      color: var(--muted);
+    }
+
+    .badge-pomo {
+      background: #fbebe9;
+      color: #eb5757;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #37352f;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.25s;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>🍅 Focus Hub & Work Tracker</h1>
+        <p>Real-time visual stats, automated progress bars & Notion export</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary" onclick="copyNotionMarkdown()">📋 Copy for Notion</button>
+        <button class="btn-secondary" onclick="exportJSON()" title="Export data as JSON">💾 Export JSON</button>
+        <button class="btn-secondary" onclick="syncToNotion()" title="Push data to Notion API">🔄 Sync to Notion</button>
+      </div>
+    </header>
+
+    <!-- KPI Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="label">Today's Pomodoros</div>
+        <div class="value" id="stat-pomo">0 / 8</div>
+        <div class="subtext" id="stat-goal-pct">0% of daily goal</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Total Focus Time</div>
+        <div class="value" id="stat-time">0h 00m</div>
+        <div class="subtext">Today's deep work</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Active Tasks</div>
+        <div class="value" id="stat-tasks">0 / 0</div>
+        <div class="subtext" id="stat-completed-tasks">0 completed</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Focus Streak</div>
+        <div class="value" id="stat-streak">5 Days 🔥</div>
+        <div class="subtext">Consistent progress</div>
+      </div>
+    </div>
+
+    <!-- Visual Analytics: 7-Day Chart & Category Breakdown -->
+    <div class="analytics-grid">
+      <div class="card">
+        <div class="card-title">
+          <span>📊 Weekly Focus Trends (Daily Pomodoros)</span>
+          <span style="font-size: 12px; color: var(--muted);" id="week-total-mins">0h total</span>
+        </div>
+        <div class="bar-chart" id="weekly-bar-chart">
+          <!-- Rendered via JS -->
+        </div>
+        <div class="bar-labels" id="weekly-bar-labels">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>🏷️ Work by Category</span>
+          <span style="font-size: 12px; color: var(--muted);">Today's split</span>
+        </div>
+        <div id="category-distribution">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Grid: Timer on left, Task & Work Log on right -->
+    <div class="grid-main">
+      <!-- Left Column: Timer -->
+      <div>
+        <div class="card">
+          <div class="timer-modes">
+            <button class="mode-btn active" onclick="setMode('work', 25)">Focus (25m)</button>
+            <button class="mode-btn" onclick="setMode('short', 5)">Break (5m)</button>
+            <button class="mode-btn" onclick="setMode('long', 15)">Long (15m)</button>
+          </div>
+
+          <div class="timer-display" id="timer-display">25:00</div>
+          <div class="timer-task-label" id="active-task-display">🎯 Select a task to link</div>
+
+          <div class="timer-controls">
+            <button class="btn-primary" id="start-btn" onclick="toggleTimer()">▶ Start</button>
+            <button class="btn-secondary" onclick="resetTimer()">Reset</button>
+            <button class="btn-secondary" title="Complete now" onclick="completeCurrentPomodoro()">+1 🍅</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>📌 Embed / Use in Notion</span>
+          </div>
+          <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px;">
+            1. Deploy to GitHub Pages (see README).<br>
+            2. In Notion, type /embed and paste your GitHub Pages URL.<br>
+            3. Use 'Export JSON' to save data, then run sync_to_notion.py to push to Notion databases.
+          </p>
+          <button class="btn-secondary" style="width: 100%;" onclick="copyNotionMarkdown()">
+            📋 Copy Daily Summary
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Tasks and Work Log -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>🎯 Tasks & Progress Tracking</span>
+            <span style="font-size: 12px; color: var(--muted);">Click card to focus</span>
+          </div>
+
+          <form class="task-form" onsubmit="addTask(event)">
+            <input type="text" id="new-task-name" placeholder="New task..." required />
+            <select id="new-task-category">
+              <option value="Engineering">Engineering</option>
+              <option value="Strategy">Strategy</option>
+              <option value="Design">Design</option>
+              <option value="Admin">Admin</option>
+            </select>
+            <input type="number" id="new-task-target" min="1" max="20" value="4" title="Target pomodoros" />
+            <button type="submit" class="btn-secondary">Add Task</button>
+          </form>
+
+          <div id="task-list">
+            <!-- Tasks rendered by JS -->
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>🕒 Today's Session History</span>
+            <button class="btn-icon" onclick="clearLogs()" title="Clear logs">🗑️</button>
+          </div>
+
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Task</th>
+                <th>Category</th>
+                <th>Duration</th>
+              </tr>
+            </thead>
+            <tbody id="log-list">
+              <!-- Logs rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Copied to clipboard!</div>
+
+  <script>
+    if (window.self !== window.top) {
+      document.body.style.padding = '12px 8px';
+      document.querySelector('.header-actions').style.display = 'none';
+    }
+    // State
+    let mode = 'work';
+    let durationMinutes = 25;
+    let timeLeft = 25 * 60;
+    let timerInterval = null;
+    let isRunning = false;
+    let activeTaskId = 1;
+
+    let tasks = JSON.parse(localStorage.getItem('focus_tasks_v2') || 'null') || [
+      { id: 1, name: 'Review Q3 Product Roadmap', target: 4, completed: 3, done: false, category: 'Strategy' },
+      { id: 2, name: 'Backend API Refactoring', target: 6, completed: 2, done: false, category: 'Engineering' },
+      { id: 3, name: 'Sprint Retrospective Deck', target: 2, completed: 2, done: true, category: 'Design' },
+      { id: 4, name: 'Inbox Zero & Customer Sync', target: 2, completed: 1, done: false, category: 'Admin' }
+    ];
+
+    // Weekly history (past 7 days pomodoro counts)
+    let weeklyHistory = JSON.parse(localStorage.getItem('focus_weekly_history') || 'null') || {
+      'Mon': 5,
+      'Tue': 7,
+      'Wed': 6,
+      'Thu': 8,
+      'Fri': 4,
+      'Sat': 2,
+      'Sun': 6 // Today
+    };
+
+    let logs = JSON.parse(localStorage.getItem('focus_logs_v2') || 'null') || [
+      { id: 1, time: '09:00', type: 'Pomodoro', task: 'Review Q3 Product Roadmap', category: 'Strategy', duration: 25 },
+      { id: 2, time: '09:30', type: 'Pomodoro', task: 'Review Q3 Product Roadmap', category: 'Strategy', duration: 25 },
+      { id: 3, time: '10:15', type: 'Pomodoro', task: 'Review Q3 Product Roadmap', category: 'Strategy', duration: 25 },
+      { id: 4, time: '11:00', type: 'Pomodoro', task: 'Backend API Refactoring', category: 'Engineering', duration: 25 },
+      { id: 5, time: '11:30', type: 'Pomodoro', task: 'Backend API Refactoring', category: 'Engineering', duration: 25 },
+      { id: 6, time: '13:00', type: 'Pomodoro', task: 'Inbox Zero & Customer Sync', category: 'Admin', duration: 25 }
+    ];
+
+    function playChime() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 1.2);
+      } catch (e) {
+        console.log('Audio error:', e);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem('focus_tasks_v2', JSON.stringify(tasks));
+      localStorage.setItem('focus_logs_v2', JSON.stringify(logs));
+      localStorage.setItem('focus_weekly_history', JSON.stringify(weeklyHistory));
+      renderStats();
+      renderVisualCharts();
+      renderTasks();
+      renderLogs();
+      if (window.self !== window.top) {
+        window.parent.postMessage({ type: 'resize', height: document.body.scrollHeight }, '*');
+      }
+    }
+
+    function setMode(newMode, mins) {
+      clearInterval(timerInterval);
+      isRunning = false;
+      document.getElementById('start-btn').innerText = '▶ Start';
+      mode = newMode;
+      durationMinutes = mins;
+      timeLeft = mins * 60;
+      
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      const str = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      document.getElementById('timer-display').innerText = str;
+      document.title = `${str} - Focus Hub`;
+    }
+
+    function toggleTimer() {
+      if (isRunning) {
+        clearInterval(timerInterval);
+        isRunning = false;
+        document.getElementById('start-btn').innerText = '▶ Resume';
+      } else {
+        isRunning = true;
+        document.getElementById('start-btn').innerText = '⏸ Pause';
+        timerInterval = setInterval(() => {
+          if (timeLeft > 0) {
+            timeLeft--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            playChime();
+            onTimerComplete();
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isRunning = false;
+      timeLeft = durationMinutes * 60;
+      document.getElementById('start-btn').innerText = '▶ Start';
+      updateTimerDisplay();
+    }
+
+    function onTimerComplete() {
+      if (mode === 'work') {
+        completeCurrentPomodoro();
+        alert('🎉 Awesome work! Session completed. Time for a short break!');
+        setMode('short', 5);
+      } else {
+        alert('☕ Break finished! Ready to get back into focus?');
+        setMode('work', 25);
+      }
+    }
+
+    function completeCurrentPomodoro() {
+      let taskName = 'General Deep Work';
+      let category = 'Strategy';
+      if (activeTaskId) {
+        const task = tasks.find(t => t.id === activeTaskId);
+        if (task) {
+          task.completed++;
+          if (task.completed >= task.target) {
+            task.done = true;
+          }
+          taskName = task.name;
+          category = task.category || 'General';
+        }
+      }
+
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      logs.unshift({
+        id: Date.now(),
+        time: timeStr,
+        type: 'Pomodoro',
+        task: taskName,
+        category: category,
+        duration: 25
+      });
+
+      // Update weekly chart for today
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const todayDay = days[now.getDay()];
+      weeklyHistory[todayDay] = (weeklyHistory[todayDay] || 0) + 1;
+
+      saveState();
+      showToast('🍅 Session logged & stats updated!');
+    }
+
+    function addTask(e) {
+      e.preventDefault();
+      const nameInput = document.getElementById('new-task-name');
+      const catInput = document.getElementById('new-task-category');
+      const targetInput = document.getElementById('new-task-target');
+      const task = {
+        id: Date.now(),
+        name: nameInput.value.trim(),
+        category: catInput.value,
+        target: parseInt(targetInput.value) || 4,
+        completed: 0,
+        done: false
+      };
+      tasks.push(task);
+      selectTask(task.id);
+      nameInput.value = '';
+      saveState();
+    }
+
+    function selectTask(id) {
+      activeTaskId = (activeTaskId === id) ? null : id;
+      updateActiveTaskDisplay();
+      renderTasks();
+    }
+
+    function toggleTaskDone(id, event) {
+      event.stopPropagation();
+      const task = tasks.find(t => t.id === id);
+      if (task) {
+        task.done = !task.done;
+        saveState();
+      }
+    }
+
+    function deleteTask(id, event) {
+      event.stopPropagation();
+      tasks = tasks.filter(t => t.id !== id);
+      if (activeTaskId === id) activeTaskId = null;
+      updateActiveTaskDisplay();
+      saveState();
+    }
+
+    function updateActiveTaskDisplay() {
+      const display = document.getElementById('active-task-display');
+      if (activeTaskId) {
+        const task = tasks.find(t => t.id === activeTaskId);
+        display.innerHTML = `🎯 Focusing on: <b>${task ? task.name : ''}</b>`;
+      } else {
+        display.innerText = '🎯 Select a task to link';
+      }
+    }
+
+    function renderTasks() {
+      const container = document.getElementById('task-list');
+      container.innerHTML = tasks.map(task => {
+        const pct = Math.min(100, Math.round((task.completed / task.target) * 100));
+        const isSelected = activeTaskId === task.id;
+        const tagClass = 'tag-' + (task.category ? task.category.toLowerCase() : 'strategy');
+        return `
+          <div class="task-item ${isSelected ? 'selected' : ''}" onclick="selectTask(${task.id})">
+            <input type="radio" name="active_task" class="task-radio" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); selectTask(${task.id});" />
+            <div class="task-info">
+              <div class="task-title ${task.done ? 'done' : ''}">
+                ${task.name}
+                <span class="category-tag ${tagClass}">${task.category || 'General'}</span>
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: ${pct}%"></div>
+              </div>
+              <div class="task-meta">
+                <span>🍅 ${task.completed} / ${task.target} sessions</span>
+                <span>${pct}% complete</span>
+              </div>
+            </div>
+            <div class="task-actions">
+              <button class="btn-icon" onclick="toggleTaskDone(${task.id}, event)" title="${task.done ? 'Mark incomplete' : 'Mark done'}">
+                ${task.done ? '↩️' : '✅'}
+              </button>
+              <button class="btn-icon" onclick="deleteTask(${task.id}, event)" title="Delete">🗑️</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderLogs() {
+      const tbody = document.getElementById('log-list');
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--muted);">No sessions recorded yet today</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = logs.slice(0, 10).map(log => {
+        const tagClass = 'tag-' + (log.category ? log.category.toLowerCase() : 'strategy');
+        return `
+          <tr>
+            <td>${log.time}</td>
+            <td><span class="badge ${log.type === 'Pomodoro' ? 'badge-pomo' : ''}">${log.type}</span></td>
+            <td>${log.task}</td>
+            <td><span class="category-tag ${tagClass}">${log.category || 'General'}</span></td>
+            <td>${log.duration}m</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderStats() {
+      const totalPomos = logs.filter(l => l.type === 'Pomodoro').length;
+      document.getElementById('stat-pomo').innerText = `${totalPomos} / 8`;
+      const pct = Math.round((totalPomos / 8) * 100);
+      document.getElementById('stat-goal-pct').innerText = `${pct}% of daily goal`;
+      
+      const totalMins = totalPomos * 25;
+      const hrs = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+      document.getElementById('stat-time').innerText = `${hrs}h ${String(mins).padStart(2, '0')}m`;
+
+      const doneTasks = tasks.filter(t => t.done).length;
+      document.getElementById('stat-tasks').innerText = `${doneTasks} / ${tasks.length}`;
+      document.getElementById('stat-completed-tasks').innerText = `${doneTasks} tasks done`;
+    }
+
+    function renderVisualCharts() {
+      // 1. Render 7-day Bar Chart
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      const todayIdx = (new Date().getDay() + 6) % 7; // Mon=0 .. Sun=6
+      const maxVal = Math.max(8, ...Object.values(weeklyHistory));
+      
+      let chartHtml = '';
+      let labelsHtml = '';
+      let weekTotalPomos = 0;
+
+      days.forEach((day, idx) => {
+        const val = weeklyHistory[day] || 0;
+        weekTotalPomos += val;
+        const heightPct = Math.min(100, Math.round((val / maxVal) * 100));
+        const isToday = idx === todayIdx;
+
+        chartHtml += `
+          <div class="bar-col ${isToday ? 'today' : ''}" title="${day}: ${val} pomodoros (${val * 25} mins)">
+            <span class="bar-val">${val > 0 ? val : ''}</span>
+            <div class="bar-fill" style="height: ${Math.max(6, heightPct)}%;"></div>
+          </div>
+        `;
+
+        labelsHtml += `
+          <div class="bar-label-item ${isToday ? 'today' : ''}">${day}${isToday ? ' •' : ''}</div>
+        `;
+      });
+
+      document.getElementById('weekly-bar-chart').innerHTML = chartHtml;
+      document.getElementById('weekly-bar-labels').innerHTML = labelsHtml;
+      const totalHrs = Math.floor((weekTotalPomos * 25) / 60);
+      document.getElementById('week-total-mins').innerText = `${totalHrs}h ${ (weekTotalPomos * 25) % 60 }m this week`;
+
+      // 2. Render Category Distribution
+      const catCounts = {};
+      logs.filter(l => l.type === 'Pomodoro').forEach(l => {
+        const cat = l.category || 'Other';
+        catCounts[cat] = (catCounts[cat] || 0) + 1;
+      });
+
+      const totalLogged = logs.filter(l => l.type === 'Pomodoro').length || 1;
+      const catColors = {
+        'Strategy': '#1a73e8',
+        'Engineering': '#0f8558',
+        'Design': '#eb5757',
+        'Admin': '#d9730d',
+        'Other': '#787774'
+      };
+
+      let catHtml = '';
+      for (const [cat, count] of Object.entries(catCounts)) {
+        const catPct = Math.round((count / totalLogged) * 100);
+        const color = catColors[cat] || '#787774';
+        const mins = count * 25;
+        catHtml += `
+          <div class="category-row">
+            <div class="category-header">
+              <span><b>${cat}</b> (${mins} mins)</span>
+              <span>${catPct}%</span>
+            </div>
+            <div class="category-bar-bg">
+              <div class="category-bar-fill" style="width: ${catPct}%; background: ${color};"></div>
+            </div>
+          </div>
+        `;
+      }
+      if (!catHtml) {
+        catHtml = `<div style="font-size: 13px; color: var(--muted); padding-top: 20px;">Complete focus sessions to see category split.</div>`;
+      }
+      document.getElementById('category-distribution').innerHTML = catHtml;
+    }
+
+    function clearLogs() {
+      if (confirm("Clear today's session logs?")) {
+        logs = [];
+        saveState();
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function copyNotionMarkdown() {
+      const totalPomos = logs.filter(l => l.type === 'Pomodoro').length;
+      const totalMins = totalPomos * 25;
+      const hrs = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+
+      let md = `## 🍅 Focus & Work Summary (${new Date().toLocaleDateString()})\n\n`;
+      md += `> **Stats**: ${totalPomos} Pomodoros completed | **Total Focus**: ${hrs}h ${mins}m | **Daily Goal**: ${Math.round((totalPomos/8)*100)}%\n\n`;
+      md += `### 📋 Tasks Progress\n`;
+      tasks.forEach(t => {
+        const pct = Math.min(100, Math.round((t.completed / t.target) * 100));
+        const status = t.done ? '[x]' : '[ ]';
+        md += `- ${status} **${t.name}** [${t.category}]: ${t.completed}/${t.target} 🍅 (${pct}%)\n`;
+      });
+      md += `\n### 🕒 Completed Sessions\n`;
+      logs.forEach(l => {
+        md += `- **${l.time}** | 🍅 ${l.duration}m | *${l.task}* (${l.category})\n`;
+      });
+
+      navigator.clipboard.writeText(md).then(() => {
+        showToast('📋 Copied Notion Markdown to clipboard!');
+      }).catch(() => {
+        prompt('Copy your Notion markdown below:', md);
+      });
+    }
+
+    function exportJSON() {
+      const data = { tasks, logs, weeklyHistory, exportedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `focus-hub-export-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('💾 Data exported as JSON!');
+    }
+
+    function syncToNotion() {
+      let endpoint = localStorage.getItem('notion_sync_endpoint');
+      if (!endpoint) {
+        endpoint = prompt('Enter Notion API Sync Endpoint URL:');
+        if (endpoint) {
+          localStorage.setItem('notion_sync_endpoint', endpoint);
+        } else {
+          return;
+        }
+      }
+      
+      const payload = { tasks, logs, weeklyHistory };
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(res => {
+        if (res.ok) {
+          showToast('✅ Synced to Notion successfully!');
+        } else {
+          showToast('❌ Sync failed!');
+        }
+      })
+      .catch(err => {
+        showToast('Sync configured! Run sync_to_notion.py to push data.');
+      });
+    }
+
+    // Initialize
+    updateTimerDisplay();
+    updateActiveTaskDisplay();
+    saveState();
+  </script>
+</body>
+</html>

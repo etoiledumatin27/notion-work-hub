@@ -5,18 +5,23 @@ import json
 import csv
 import urllib.request
 import urllib.error
+import urllib.parse
+from datetime import datetime
 
 def load_env(env_path):
-    if not os.path.exists(env_path):
-        return {}
     env = {}
-    with open(env_path, "r") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            k, v = line.split("=", 1)
-            env[k.strip()] = v.strip().strip("'\"")
+    try:
+        if not os.path.exists(env_path):
+            return {}
+        with open(env_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                env[k.strip()] = v.strip().strip("'\"")
+    except Exception:
+        pass
     return env
 
 def notion_request(endpoint, token, payload=None, method="POST"):
@@ -27,7 +32,6 @@ def notion_request(endpoint, token, payload=None, method="POST"):
         "Content-Type": "application/json"
     }
     if method == "GET" and payload:
-        import urllib.parse
         url += "?" + urllib.parse.urlencode(payload)
         data = None
     else:
@@ -90,8 +94,38 @@ def main():
         print(f"Reading from JSON: {json_path}")
         with open(json_path, "r") as f:
             data = json.load(f)
-            tasks_data = data.get("tasks", [])
-            logs_data = data.get("logs", [])
+            # Widget exports tasks as {id, name, target, completed, done(bool), category}
+            for t in data.get("tasks", []):
+                if isinstance(t.get("done"), bool):
+                    # Widget JSON format
+                    status = "Done" if t["done"] else ("In Progress" if t.get("completed", 0) > 0 else "To Do")
+                    tasks_data.append({
+                        "name": t.get("name", ""),
+                        "status": status,
+                        "target": t.get("target", 0),
+                        "done": t.get("completed", 0),
+                        "category": t.get("category", "Admin")
+                    })
+                else:
+                    # Already in sync format
+                    tasks_data.append(t)
+            # Widget exports logs as {id, time, type, task, category, duration}
+            export_date = data.get("exportedAt", "")[:10] or datetime.now().strftime("%Y-%m-%d")
+            for l in data.get("logs", []):
+                if "session" in l:
+                    # Already in sync format
+                    logs_data.append(l)
+                else:
+                    # Widget JSON format
+                    time_str = l.get("time", "00:00")
+                    logs_data.append({
+                        "session": f"🍅 {l.get('task', 'Focus Session')}",
+                        "date": f"{export_date}T{time_str}:00.000+09:00",
+                        "duration": l.get("duration", 25),
+                        "type": "Pomodoro (25m)" if l.get("type") == "Pomodoro" else l.get("type", "Pomodoro (25m)"),
+                        "task": l.get("task", ""),
+                        "notes": ""
+                    })
     else:
         print(f"Reading from CSVs: {tasks_source}, {logs_source}")
         if os.path.exists(tasks_source):

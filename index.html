@@ -418,9 +418,11 @@
       margin-left: 6px;
     }
 
-    .tag-strategy { background: #e8f0fe; color: #1a73e8; }
-    .tag-engineering { background: #e6f4ea; color: #137333; }
-    .tag-design { background: #fce8e6; color: #c5221f; }
+    .tag-reading\ papers, .tag-readingpapers { background: #e8f0fe; color: #1a73e8; }
+    .tag-textbooks { background: #f3e8fd; color: #7c3aed; }
+    .tag-writing { background: #fce8e6; color: #c5221f; }
+    .tag-data\ analysis, .tag-dataanalysis { background: #e6f4ea; color: #137333; }
+    .tag-coding { background: #e0f7fa; color: #00838f; }
     .tag-admin { background: #fef7e0; color: #b06000; }
 
     .btn-icon {
@@ -603,9 +605,11 @@
           <form class="task-form" onsubmit="addTask(event)">
             <input type="text" id="new-task-name" placeholder="New task..." required />
             <select id="new-task-category">
-              <option value="Engineering">Engineering</option>
-              <option value="Strategy">Strategy</option>
-              <option value="Design">Design</option>
+              <option value="Reading Papers">Reading Papers</option>
+              <option value="Textbooks">Textbooks</option>
+              <option value="Writing">Writing</option>
+              <option value="Data Analysis">Data Analysis</option>
+              <option value="Coding">Coding</option>
               <option value="Admin">Admin</option>
             </select>
             <input type="number" id="new-task-target" min="1" max="20" value="4" title="Target pomodoros" />
@@ -647,7 +651,6 @@
   <script>
     if (window.self !== window.top) {
       document.body.style.padding = '12px 8px';
-      document.querySelector('.header-actions').style.display = 'none';
     }
     // State
     let mode = 'work';
@@ -658,10 +661,11 @@
     let activeTaskId = 1;
 
     let tasks = JSON.parse(localStorage.getItem('focus_tasks_v2') || 'null') || [
-      { id: 1, name: 'Review Q3 Product Roadmap', target: 4, completed: 3, done: false, category: 'Strategy' },
-      { id: 2, name: 'Backend API Refactoring', target: 6, completed: 2, done: false, category: 'Engineering' },
-      { id: 3, name: 'Sprint Retrospective Deck', target: 2, completed: 2, done: true, category: 'Design' },
-      { id: 4, name: 'Inbox Zero & Customer Sync', target: 2, completed: 1, done: false, category: 'Admin' }
+      { id: 1, name: 'Read: Attention Is All You Need (Vaswani et al.)', target: 3, completed: 2, done: false, category: 'Reading Papers' },
+      { id: 2, name: 'Chapter 5 – Statistical Learning Theory', target: 4, completed: 1, done: false, category: 'Textbooks' },
+      { id: 3, name: 'Draft: Related Work Section', target: 4, completed: 0, done: false, category: 'Writing' },
+      { id: 4, name: 'Run experiment: ablation study batch 2', target: 3, completed: 3, done: true, category: 'Data Analysis' },
+      { id: 5, name: 'Refactor data pipeline scripts', target: 2, completed: 1, done: false, category: 'Coding' }
     ];
 
     // Weekly history (past 7 days pomodoro counts)
@@ -676,12 +680,12 @@
     };
 
     let logs = JSON.parse(localStorage.getItem('focus_logs_v2') || 'null') || [
-      { id: 1, time: '09:00', type: 'Pomodoro', task: 'Review Q3 Product Roadmap', category: 'Strategy', duration: 25 },
-      { id: 2, time: '09:30', type: 'Pomodoro', task: 'Review Q3 Product Roadmap', category: 'Strategy', duration: 25 },
-      { id: 3, time: '10:15', type: 'Pomodoro', task: 'Review Q3 Product Roadmap', category: 'Strategy', duration: 25 },
-      { id: 4, time: '11:00', type: 'Pomodoro', task: 'Backend API Refactoring', category: 'Engineering', duration: 25 },
-      { id: 5, time: '11:30', type: 'Pomodoro', task: 'Backend API Refactoring', category: 'Engineering', duration: 25 },
-      { id: 6, time: '13:00', type: 'Pomodoro', task: 'Inbox Zero & Customer Sync', category: 'Admin', duration: 25 }
+      { id: 1, time: '09:00', type: 'Pomodoro', task: 'Read: Attention Is All You Need (Vaswani et al.)', category: 'Reading Papers', duration: 25 },
+      { id: 2, time: '09:30', type: 'Pomodoro', task: 'Read: Attention Is All You Need (Vaswani et al.)', category: 'Reading Papers', duration: 25 },
+      { id: 3, time: '10:15', type: 'Pomodoro', task: 'Chapter 5 – Statistical Learning Theory', category: 'Textbooks', duration: 25 },
+      { id: 4, time: '11:00', type: 'Pomodoro', task: 'Run experiment: ablation study batch 2', category: 'Data Analysis', duration: 25 },
+      { id: 5, time: '11:30', type: 'Pomodoro', task: 'Run experiment: ablation study batch 2', category: 'Data Analysis', duration: 25 },
+      { id: 6, time: '13:00', type: 'Pomodoro', task: 'Refactor data pipeline scripts', category: 'Coding', duration: 25 }
     ];
 
     function playChime() {
@@ -779,8 +783,8 @@
     }
 
     function completeCurrentPomodoro() {
-      let taskName = 'General Deep Work';
-      let category = 'Strategy';
+      let taskName = 'General Research';
+      let category = 'Reading Papers';
       if (activeTaskId) {
         const task = tasks.find(t => t.id === activeTaskId);
         if (task) {
@@ -870,7 +874,7 @@
       container.innerHTML = tasks.map(task => {
         const pct = Math.min(100, Math.round((task.completed / task.target) * 100));
         const isSelected = activeTaskId === task.id;
-        const tagClass = 'tag-' + (task.category ? task.category.toLowerCase() : 'strategy');
+        const tagClass = 'tag-' + (task.category ? task.category.toLowerCase().replace(/\s+/g, '') : 'admin');
         return `
           <div class="task-item ${isSelected ? 'selected' : ''}" onclick="selectTask(${task.id})">
             <input type="radio" name="active_task" class="task-radio" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); selectTask(${task.id});" />
@@ -905,7 +909,7 @@
         return;
       }
       tbody.innerHTML = logs.slice(0, 10).map(log => {
-        const tagClass = 'tag-' + (log.category ? log.category.toLowerCase() : 'strategy');
+        const tagClass = 'tag-' + (log.category ? log.category.toLowerCase().replace(/\s+/g, '') : 'admin');
         return `
           <tr>
             <td>${log.time}</td>
@@ -976,9 +980,11 @@
 
       const totalLogged = logs.filter(l => l.type === 'Pomodoro').length || 1;
       const catColors = {
-        'Strategy': '#1a73e8',
-        'Engineering': '#0f8558',
-        'Design': '#eb5757',
+        'Reading Papers': '#1a73e8',
+        'Textbooks': '#7c3aed',
+        'Writing': '#eb5757',
+        'Data Analysis': '#0f8558',
+        'Coding': '#00838f',
         'Admin': '#d9730d',
         'Other': '#787774'
       };

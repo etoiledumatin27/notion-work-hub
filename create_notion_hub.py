@@ -13,16 +13,19 @@ import urllib.error
 from datetime import datetime
 
 def load_env(env_path):
-    if not os.path.exists(env_path):
-        return {}
     env = {}
-    with open(env_path, "r") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            k, v = line.split("=", 1)
-            env[k.strip()] = v.strip().strip("'\"")
+    try:
+        if not os.path.exists(env_path):
+            return {}
+        with open(env_path, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                env[k.strip()] = v.strip().strip("'\"")
+    except Exception:
+        pass
     return env
 
 def extract_page_id(url_or_id):
@@ -187,11 +190,12 @@ def main():
             "Category": {
                 "select": {
                     "options": [
-                        {"name": "Strategy", "color": "blue"},
-                        {"name": "Engineering", "color": "green"},
-                        {"name": "Design", "color": "red"},
-                        {"name": "Admin", "color": "orange"},
-                        {"name": "Research", "color": "purple"}
+                        {"name": "Reading Papers", "color": "blue"},
+                        {"name": "Textbooks", "color": "purple"},
+                        {"name": "Writing", "color": "red"},
+                        {"name": "Data Analysis", "color": "green"},
+                        {"name": "Coding", "color": "gray"},
+                        {"name": "Admin", "color": "orange"}
                     ]
                 }
             },

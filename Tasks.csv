@@ -1,6 +1,7 @@
 Task Name,Status,Target Pomodoros,Completed Pomodoros,Category,Priority,Notes
-Review Q3 Product Roadmap,In Progress,4,2,Strategy,High,Draft comments on key milestones and team goals
-Client Presentation Deck,To Do,6,0,Design,High,Prepare slides for Friday review
-Code Review & PR Triage,Done,2,2,Engineering,Medium,Review backend API changes and merge PRs
-Weekly Report & Inbox Zero,In Progress,2,1,Admin,Medium,Summarize weekly metrics and reply to pending emails
-Research Competitor Benchmarks,To Do,3,0,Research,Low,Gather feature comparison data
+Literature Review: Foundation Models,In Progress,4,2,Reading Papers,High,Annotate recent survey papers and methodology
+Statistical Learning Theory Ch. 4,To Do,4,0,Textbooks,Medium,Work through proof exercises in Bishop / ESL
+Draft Methodology Section,In Progress,6,2,Writing,High,Write formulation and loss function derivation
+Baseline Benchmarking & Ablation,Done,3,3,Data Analysis,High,Run evaluation metrics on validation set
+Implement Custom Attention Layer,In Progress,4,1,Coding,Medium,Fix tensor shape mismatch and unit test
+Weekly Advisor Meeting Prep,To Do,2,0,Admin,Low,Summarize weekly experimental results

@@ -15,10 +15,10 @@
 ## ⏱️ Pomodoro Timer
 
 > [!NOTE]
-> **How to embed an interactive timer here:**
+> **How to embed your custom interactive timer here:**
 > 1. Type `/embed` right below this line.
-> 2. Paste `https://pomofocus.io/app` (or `https://flocus.com/minimalist-pomodoro-timer/`).
-> 3. Drag the borders to adjust the height and width to your liking.
+> 2. Paste `https://etoiledumatin27.github.io/notion-work-hub/`.
+> 3. Drag the borders to adjust the height and width.
 
 ---
 
@@ -26,11 +26,12 @@
 
 | Task Name | Status | Target 🍅 | Done 🍅 | Progress | Time Spent | Category |
 | :--- | :---: | :---: | :---: | :--- | :---: | :--- |
-| **Review Q3 Product Roadmap** | `In Progress` | 4 | 2 | ▓▓▓▓▓░░░░░ 50% | 50m | Strategy |
-| **Client Presentation Deck** | `To Do` | 6 | 0 | ░░░░░░░░░░ 0% | 0m | Design |
-| **Code Review & PR Triage** | `Done` | 2 | 2 | ▓▓▓▓▓▓▓▓▓▓ 100% | 50m | Engineering |
-| **Weekly Report & Inbox Zero** | `In Progress` | 2 | 1 | ▓▓▓▓▓░░░░░ 50% | 25m | Admin |
-| **Research Competitor Benchmarks** | `To Do` | 3 | 0 | ░░░░░░░░░░ 0% | 0m | Research |
+| **Literature Review: Foundation Models** | `In Progress` | 4 | 2 | ▓▓▓▓▓░░░░░ 50% | 50m | Reading Papers |
+| **Statistical Learning Theory Ch. 4** | `To Do` | 4 | 0 | ░░░░░░░░░░ 0% | 0m | Textbooks |
+| **Draft Methodology Section** | `In Progress` | 6 | 2 | ▓▓▓░░░░░░░ 33% | 50m | Writing |
+| **Baseline Benchmarking & Ablation** | `Done` | 3 | 3 | ▓▓▓▓▓▓▓▓▓▓ 100% | 75m | Data Analysis |
+| **Implement Custom Attention Layer** | `In Progress` | 4 | 1 | ▓▓░░░░░░░░ 25% | 25m | Coding |
+| **Weekly Advisor Meeting Prep** | `To Do` | 2 | 0 | ░░░░░░░░░░ 0% | 0m | Admin |
 
 ### 🛠️ Formulas for Automatic Progress & Time Tracking:
 

@@ -510,8 +510,11 @@
 
     <!-- KPI Stats -->
     <div class="stats-bar">
-      <div class="stat-card">
-        <div class="label">Today's Pomodoros</div>
+      <div class="stat-card" style="cursor: pointer;" onclick="promptDailyGoal()" title="Click to set your daily Pomodoro goal">
+        <div class="label" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>Today's Pomodoros</span>
+          <span style="font-size: 10px; color: var(--accent); font-weight: 600; text-transform: none;">Edit Goal ✏️</span>
+        </div>
         <div class="value" id="stat-pomo">0 / 8</div>
         <div class="subtext" id="stat-goal-pct">0% of daily goal</div>
       </div>
@@ -659,6 +662,7 @@
     let timerInterval = null;
     let isRunning = false;
     let activeTaskId = 1;
+    let dailyGoal = parseInt(localStorage.getItem('focus_daily_goal_v2') || '8');
 
     let tasks = JSON.parse(localStorage.getItem('focus_tasks_v2') || 'null') || [
       { id: 1, name: 'Read: Attention Is All You Need (Vaswani et al.)', target: 3, completed: 2, done: false, category: 'Reading Papers' },
@@ -707,7 +711,24 @@
       }
     }
 
+    function promptDailyGoal() {
+      const current = dailyGoal || 8;
+      const input = prompt("Enter your daily Pomodoro goal (e.g. 4, 6, 8, 10):", current);
+      if (input !== null) {
+        const parsed = parseInt(input.trim());
+        if (!isNaN(parsed) && parsed > 0 && parsed <= 50) {
+          dailyGoal = parsed;
+          localStorage.setItem('focus_daily_goal_v2', dailyGoal);
+          saveState();
+          showToast(`🎯 Daily goal updated to ${dailyGoal} Pomodoros!`);
+        } else if (input.trim() !== "") {
+          alert("Please enter a valid number between 1 and 50.");
+        }
+      }
+    }
+
     function saveState() {
+      localStorage.setItem('focus_daily_goal_v2', dailyGoal);
       localStorage.setItem('focus_tasks_v2', JSON.stringify(tasks));
       localStorage.setItem('focus_logs_v2', JSON.stringify(logs));
       localStorage.setItem('focus_weekly_history', JSON.stringify(weeklyHistory));
@@ -924,9 +945,9 @@
 
     function renderStats() {
       const totalPomos = logs.filter(l => l.type === 'Pomodoro').length;
-      document.getElementById('stat-pomo').innerText = `${totalPomos} / 8`;
-      const pct = Math.round((totalPomos / 8) * 100);
-      document.getElementById('stat-goal-pct').innerText = `${pct}% of daily goal`;
+      document.getElementById('stat-pomo').innerText = `${totalPomos} / ${dailyGoal}`;
+      const pct = Math.round((totalPomos / dailyGoal) * 100);
+      document.getElementById('stat-goal-pct').innerText = `${pct}% of daily goal (${dailyGoal} target)`;
       
       const totalMins = totalPomos * 25;
       const hrs = Math.floor(totalMins / 60);
@@ -942,7 +963,7 @@
       // 1. Render 7-day Bar Chart
       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       const todayIdx = (new Date().getDay() + 6) % 7; // Mon=0 .. Sun=6
-      const maxVal = Math.max(8, ...Object.values(weeklyHistory));
+      const maxVal = Math.max(dailyGoal, ...Object.values(weeklyHistory));
       
       let chartHtml = '';
       let labelsHtml = '';
@@ -1033,7 +1054,7 @@
       const mins = totalMins % 60;
 
       let md = `## 🍅 Focus & Work Summary (${new Date().toLocaleDateString()})\n\n`;
-      md += `> **Stats**: ${totalPomos} Pomodoros completed | **Total Focus**: ${hrs}h ${mins}m | **Daily Goal**: ${Math.round((totalPomos/8)*100)}%\n\n`;
+      md += `> **Stats**: ${totalPomos} / ${dailyGoal} Pomodoros completed | **Total Focus**: ${hrs}h ${mins}m | **Daily Goal**: ${Math.round((totalPomos/dailyGoal)*100)}%\n\n`;
       md += `### 📋 Tasks Progress\n`;
       tasks.forEach(t => {
         const pct = Math.min(100, Math.round((t.completed / t.target) * 100));
@@ -1053,7 +1074,7 @@
     }
 
     function exportJSON() {
-      const data = { tasks, logs, weeklyHistory, exportedAt: new Date().toISOString() };
+      const data = { dailyGoal, tasks, logs, weeklyHistory, exportedAt: new Date().toISOString() };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
